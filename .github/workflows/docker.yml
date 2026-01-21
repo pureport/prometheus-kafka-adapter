@@ -1,0 +1,67 @@
+---
+name: docker
+on:
+  push:
+    branches: [ main, 'hotfix/**' ]
+  workflow_dispatch:
+  repository_dispatch:
+    types: [ docker-build-event ]
+jobs:
+  publish:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Set job variables
+        id: vars
+        run: |
+          echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
+          echo "::set-output name=iso_date::$(date -u +%FT%T)Z"
+
+      - name: Set docker job variables
+        id: docker_vars
+        run: |
+          echo "::set-output name=tag_date::$(echo ${{ steps.vars.outputs.iso_date }} | sed 's/[T:-]//g')"
+
+      - name: Login to GitHub Packages container registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Docker QEMU
+        if: startsWith(runner.name, 'Hosted Agent') || startsWith(runner.name, 'GitHub Actions')
+        uses: docker/setup-qemu-action@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: ghcr.io/${{ github.repository_owner }}/digital-porpoise/prometheus-kafka-adapter
+          tags: |
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=sha,prefix=
+            type=sha,prefix=${{ steps.docker_vars.outputs.tag_date }}-
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v3
+        with:
+          context: .
+          platforms: linux/amd64
+          ssh: |
+            default
+          build-args: |
+            BUILD_DATE=${{ steps.vars.outputs.iso_date }}
+            BUILD_DATE_TAG=${{ steps.docker_vars.outputs.tag_date }}
+            VCS_REF=${{ steps.vars.outputs.sha_short }}
+            IMAGE_VERSION=${{ steps.docker_vars.outputs.tag_date }}-${{ steps.vars.outputs.sha_short }}
+          push: true
+          labels: ${{ steps.meta.outputs.labels }}
+          tags: ${{ steps.meta.outputs.tags }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
