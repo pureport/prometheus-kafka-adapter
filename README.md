@@ -46,7 +46,7 @@ Prometheus-kafka-adapter listens for metrics coming from Prometheus and sends th
 - `SCHEMA_REGISTRY_URL`: defines the schema registry url to be used, only used if `SERIALIZATION_FORMAT=avro-schema-registry`.
 - `SCHEMA_REGISTRY_USERNAME`: defines the schema registry username to be used, only used if `SERIALIZATION_FORMAT=avro-schema-registry`.
 - `SCHEMA_REGISTRY_PASSWORD`: defines the schema registry password to be used, only used if `SERIALIZATION_FORMAT=avro-schema-registry`.
-- `SCHEMA_REGISTRY_AUTO_REGISTRY_SCHEMAS`: defines the schema registry auto registry schema, only used if `SERIALIZATION_FORMAT=avro-schema-registry`, defaults to `false`.
+- `SCHEMA_REGISTRY_AUTO_REGISTER_SCHEMAS`: defines whether the schema registry should automatically register schemas, only used if `SERIALIZATION_FORMAT=avro-schema-registry`, defaults to `false`.
 - `PORT`: defines http port to listen, defaults to `8080`, used directly by [gin](https://github.com/gin-gonic/gin).
 - `BASIC_AUTH_USERNAME`: basic auth username to be used for receive endpoint, defaults is no basic auth.
 - `BASIC_AUTH_PASSWORD`: basic auth password to be used for receive endpoint, defaults is no basic auth.
