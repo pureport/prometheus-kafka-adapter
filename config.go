@@ -139,10 +139,15 @@ func init() {
 	if value := os.Getenv("SCHEMA_REGISTRY_PASSWORD"); value != "" {
 		schemaRegistryPassword = value
 	}
-	if value := os.Getenv("SCHEMA_REGISTRY_AUTO_REGISTRY_SCHEMAS"); value != "" {
+	value := os.Getenv("SCHEMA_REGISTRY_AUTO_REGISTER_SCHEMAS")
+	if value == "" {
+		// Backward compatibility with the old, misspelled environment variable name.
+		value = os.Getenv("SCHEMA_REGISTRY_AUTO_REGISTRY_SCHEMAS")
+	}
+	if value != "" {
 		v, err := strconv.ParseBool(value)
 		if err != nil {
-			logrus.WithError(err).Fatalln("couldn't parse SCHEMA_REGISTRY_AUTO_REGISTRY_SCHEMAS to bool, using false")
+			logrus.WithError(err).Fatalln("couldn't parse SCHEMA_REGISTRY_AUTO_REGISTER_SCHEMAS to bool, using false")
 			v = false
 		}
 		schemaRegistryAutoRegisterSchemas = v
